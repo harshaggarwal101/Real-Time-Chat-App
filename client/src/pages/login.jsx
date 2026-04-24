@@ -1,8 +1,10 @@
 import axios from "axios";
 import React, { useState } from "react";
 import toast from "react-hot-toast";
+import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-
+import {setToken} from "../redux/slices/auth";
+import { setUserDetails } from "../redux/slices/user";
 const Login = () => {
   const [formData, setFormData] = useState({
     email: "",
@@ -11,6 +13,7 @@ const Login = () => {
 
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const dispatch=useDispatch();
 
   const onchangeHandler = (e) => {
     const { name, value } = e.target;
@@ -36,7 +39,8 @@ const Login = () => {
       if (!response.data.success) {
         throw new Error("Login failed");
       }
-
+      dispatch(setUserDetails(response.data.userDetails));
+      dispatch(setToken(response.data.token));
       toast.dismiss(toastId);
       toast.success(response.data.message);
 
