@@ -1,20 +1,24 @@
 import React from "react";
 import SignUp from "./pages/signUp"
 import Login  from "./pages/login";
-import {createBrowserRouter, RouterProvider} from 'react-router-dom';
+import {createBrowserRouter, Navigate, RouterProvider} from 'react-router-dom';
 import { Toaster } from "react-hot-toast";
 import Homepage from "./pages/Homepage";
+import { useSelector } from "react-redux";
 const App = () => {
+
+  const {token}=useSelector((state)=>state.auth);
+
   const router = createBrowserRouter([
     {
       path: "/",
-      element: <SignUp />,
+      element:token?<Homepage/>:<SignUp/>
     },
     {
-      path:"/login",element:<Login/>
+      path:"/login",element:token?<Homepage/>:<Login/>
     },
     {
-      path:"/home",element:<Homepage/>
+      path:"/home",element:token?<Homepage/>:<Navigate to={"/login"}/>
     }
   ]);
   return (
