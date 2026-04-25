@@ -9,10 +9,10 @@ const Homepage = () => {
 
   return (
     <div className='w-[90vw] h-[90vh] flex'>
-        <div className='h-full w-[20%] bg-gray-600 rounded-l-lg'>
+        <div className='h-full w-[25%] bg-gray-600 rounded-l-lg'>
             <Sidebar/>
         </div>
-        <div className='h-full w-[80%] bg-gray-400 rounded-r-lg'>
+        <div className='h-full w-[75%] bg-gray-400 rounded-r-lg'>
             <MessagesContainer/>
         </div>
     </div>
