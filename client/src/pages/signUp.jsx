@@ -1,8 +1,9 @@
 import React, { useState } from "react";
 import toast from "react-hot-toast";
 import axios from "axios";
-import { useNavigate,Link } from "react-router-dom";
-const SignUp =() => {
+import { useNavigate, Link } from "react-router-dom";
+
+const SignUp = () => {
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -12,46 +13,58 @@ const SignUp =() => {
   });
 
   const [loading, setLoading] = useState(false);
-  const navigate=useNavigate();
+  const navigate = useNavigate();
 
   const onchangeHandler = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const submitFormDataHandler = async(e) => {
+  const submitFormDataHandler = async (e) => {
     e.preventDefault();
 
-    if (formData.password!=formData.confirmPassword){
-      toast.error("password ans Confirm password not matched");
-      return;
-    }
-    if(formData.password.length<8){
-      toast.error("password length must be greater than 8");
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Password and Confirm password do not match");
       return;
     }
 
-    const toastId= toast.loading("Creating Account");
+    if (formData.password.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
+
+    const toastId = toast.loading("Creating Account...");
     console.log("clicked submit");
+
     try {
       setLoading(true);
-      const response = await axios.post("http://localhost:3000/api/v1/signup",formData);
-      if(!response.data.success){
-        throw new Error("Error occurred during signUp");
+
+      //  FIXED URL HERE 🔥🔥🔥
+      const response = await axios.post(
+        `${import.meta.env.VITE_BACKEND_URL}/signup`,
+        formData,
+        {
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+
+      if (!response.data.success) {
+        throw new Error("Error occurred during signup");
       }
-      console.log("response",response);
+
       toast.dismiss(toastId);
       toast.success(response.data.message);
+
       setTimeout(() => {
         navigate("/login");
       }, 800);
-      
+
       setLoading(false);
     } catch (error) {
       setLoading(false);
-      console.log(error);
       toast.dismiss(toastId);
-      toast.error(error.response.data.message);
+      console.log(error);
+      toast.error(error?.response?.data?.message || "Something went wrong");
     }
   };
 
@@ -65,7 +78,6 @@ const SignUp =() => {
           className="mt-6 w-[96%] flex flex-col gap-2"
           onSubmit={submitFormDataHandler}
         >
-          {/* First Name */}
           <input
             type="text"
             name="firstName"
@@ -75,7 +87,6 @@ const SignUp =() => {
             className="w-full px-4 py-2 bg-transparent border border-gray-600 text-white rounded-md"
           />
 
-          {/* Last Name */}
           <input
             type="text"
             name="lastName"
@@ -85,7 +96,6 @@ const SignUp =() => {
             className="w-full px-4 py-2 bg-transparent border border-gray-600 text-white rounded-md"
           />
 
-          {/* Email */}
           <input
             type="email"
             name="email"
@@ -95,7 +105,6 @@ const SignUp =() => {
             className="w-full px-4 py-2 bg-transparent border border-gray-600 text-white rounded-md"
           />
 
-          {/* Password */}
           <input
             type="password"
             name="password"
@@ -105,7 +114,6 @@ const SignUp =() => {
             className="w-full px-4 py-2 bg-transparent border border-gray-600 text-white rounded-md"
           />
 
-          {/* Confirm Password */}
           <input
             type="password"
             name="confirmPassword"
@@ -128,6 +136,7 @@ const SignUp =() => {
           )}
         </form>
       </div>
+
       <div className="flex items-center gap-2 justify-center mt-2 text-gray-100">
         <p>Already have an account?</p>
         <Link to={"/login"} className="underline text-blue-700">
