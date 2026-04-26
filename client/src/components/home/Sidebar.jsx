@@ -10,6 +10,7 @@ import Loader from "../common/Loader";
 const Sidebar = ({ setChatUserId ,chatUserId}) => {
   const { userData } = useSelector((state) => state.user);
   const { token } = useSelector((state) => state.auth);
+  const {allOnlineUsers}=useSelector((state)=>state.socketio);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -71,6 +72,9 @@ const Sidebar = ({ setChatUserId ,chatUserId}) => {
     setAllUsers(searchUsers);
   };
 
+  console.log("allOnlineUsers",allOnlineUsers);
+  
+
   return (
     <div className="h-full py-2">
       <div className="h-[91%] px-4 py-1">
@@ -111,7 +115,9 @@ const Sidebar = ({ setChatUserId ,chatUserId}) => {
                         onClick={() => {
                           setChatUserId(user?._id);
                         }}
-                        className={`flex items-center gap-5 hover:bg-gray-950 transition-all duration-400 cursor-pointer p-2 rounded-full ${chatUserId==user?._id?"bg-gray-950":""}`}
+                        className={`flex items-center gap-5 hover:bg-gray-950 transition-all duration-400 cursor-pointer p-2 rounded-full ${
+                          chatUserId == user?._id ? "bg-gray-950" : ""
+                        }`}
                       >
                         <div className="relative">
                           <img
@@ -119,15 +125,19 @@ const Sidebar = ({ setChatUserId ,chatUserId}) => {
                             alt={`${user?.firstName}Image`}
                             className="h-12 w-12 rounded-full object-cover"
                           />
-                          <div className="h-3 w-3 rounded-full bg-green-600 absolute top-0 right-0"></div>
+                          {allOnlineUsers.includes(user?._id) && (
+                            <div className="h-3 w-3 rounded-full bg-green-400 absolute top-0 right-0"></div>
+                          )}
                         </div>
                         <div>
                           <p>
                             <span>{user?.firstName}</span>{" "}
                             <span>{user?.lastName}</span>
                           </p>
-                          <p className="text-green-400 font-semibold">online</p>
+                          {allOnlineUsers.includes(user?._id)?
+                          <p className="text-green-400 font-semibold">online</p>:
                           <p className="text-red-400 font-semibold">offline</p>
+                  }
                         </div>
                       </div>
                     );
