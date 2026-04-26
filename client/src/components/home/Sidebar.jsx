@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import toast from "react-hot-toast";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -7,10 +7,10 @@ import { setUserDetails } from "../../redux/slices/user";
 import axios from "axios";
 import Loader from "../common/Loader";
 
-const Sidebar = ({ setChatUserId ,chatUserId}) => {
+const Sidebar = ({ setChatUserId, chatUserId }) => {
   const { userData } = useSelector((state) => state.user);
   const { token } = useSelector((state) => state.auth);
-  const {allOnlineUsers}=useSelector((state)=>state.socketio);
+  const { allOnlineUsers } = useSelector((state) => state.socketio);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -33,6 +33,7 @@ const Sidebar = ({ setChatUserId ,chatUserId}) => {
   const getAllUsers = async () => {
     try {
       setLoading(true);
+
       const response = await axios.get(
         `${import.meta.env.VITE_BACKEND_URL}/getAllUsers`,
         {
@@ -41,11 +42,11 @@ const Sidebar = ({ setChatUserId ,chatUserId}) => {
       );
 
       if (!response.data.success) {
-        throw new Error("Error occurred during fetching user data");
+        throw new Error("Error fetching users");
       }
 
       setAllUsers(response.data.allUsers);
-      setOriginalAllUsers(response.data.allUsers); // ← IMPORTANT
+      setOriginalAllUsers(response.data.allUsers);
       setLoading(false);
     } catch (error) {
       setLoading(false);
@@ -59,112 +60,117 @@ const Sidebar = ({ setChatUserId ,chatUserId}) => {
 
   const searchHandler = (e) => {
     const value = e.target.value.toLowerCase();
-    console.log(value);
+
     if (!value) {
       setAllUsers(originalAllUsers);
       return;
     }
 
-    const searchUsers = originalAllUsers.filter((user) => {
+    const filtered = originalAllUsers.filter((user) => {
       const fullName = `${user.firstName} ${user.lastName}`.toLowerCase();
       return fullName.includes(value);
     });
-    setAllUsers(searchUsers);
+
+    setAllUsers(filtered);
   };
 
-  console.log("allOnlineUsers",allOnlineUsers);
-  
+  const onlineSet = useMemo(() => {
+    return new Set(allOnlineUsers || []);
+  }, [allOnlineUsers]);
 
   return (
     <div className="h-full py-2">
       <div className="h-[91%] px-4 py-1">
+        {/* Header */}
         <div className="h-[20%]">
-          <h2 className="text-semibold text-3xl flex items-center">
+          <h2 className="text-3xl flex items-center font-semibold">
             <p>RIVOR</p>
             <p className="text-5xl text-yellow-400 animate-bounce">A</p>
           </h2>
 
-          <div className="w-full">
-            <input
-              type="text"
-              className="w-[100%] bg-gray-800 outline-none rounded-xl p-2 mt-4 text-lg"
-              placeholder="Search here"
-              onChange={searchHandler}
-            />
-          </div>
+          <input
+            type="text"
+            className="w-full bg-gray-800 outline-none rounded-xl p-2 mt-4 text-lg"
+            placeholder="Search here"
+            onChange={searchHandler}
+          />
         </div>
 
-        {/* FIXED CONDITIONAL RENDER BLOCK */}
-        <div className="h-[77%] overflow-y-auto">
+        {/* Users list */}
+        <div className="h-[77%] overflow-y-auto p-2">
           {loading ? (
             <div className="flex justify-center items-center mt-52">
               <Loader />
             </div>
+          ) : allUsers.length < 1 ? (
+            <div className="text-center mt-40 font-semibold">
+              Users not found
+            </div>
           ) : (
-            <div>
-              {allUsers.length < 1 ? (
-                <div className="text-center mt-40 font-semibold">
-                  Users not found
-                </div>
-              ) : (
-                <div className="flex flex-col gap-4 h-full">
-                  {allUsers.map((user, index) => {
-                    return (
-                      <div
-                        key={index}
-                        onClick={() => {
-                          setChatUserId(user?._id);
-                        }}
-                        className={`flex items-center gap-5 hover:bg-gray-950 transition-all duration-400 cursor-pointer p-2 rounded-full ${
-                          chatUserId == user?._id ? "bg-gray-950" : ""
+            <div className="flex flex-col gap-3">
+              {allUsers.map((user) => {
+                const isActive = String(chatUserId) === String(user?._id);
+
+                const isOnline = onlineSet.has(user?._id);
+
+                return (
+                  <div
+                    key={user?._id}
+                    onClick={() => setChatUserId(user?._id)}
+                    className={`flex items-center gap-4 cursor-pointer p-2 rounded-full transition-colors duration-200
+                      ${isActive ? "bg-gray-900" : "hover:bg-gray-950"}
+                    `}
+                  >
+                    {/* Profile */}
+                    <div className="relative">
+                      <img
+                        src={user?.profilePic}
+                        className="h-12 w-12 rounded-full object-cover"
+                        alt="profile"
+                      />
+
+                      {isOnline && (
+                        <div className="h-3 w-3 rounded-full bg-green-400 absolute top-0 right-0" />
+                      )}
+                    </div>
+
+                    {/* Name + status */}
+                    <div>
+                      <p>
+                        {user?.firstName} {user?.lastName}
+                      </p>
+
+                      <p
+                        className={`text-sm font-semibold ${
+                          isOnline ? "text-green-400" : "text-red-400"
                         }`}
                       >
-                        <div className="relative">
-                          <img
-                            src={user?.profilePic}
-                            alt={`${user?.firstName}Image`}
-                            className="h-12 w-12 rounded-full object-cover"
-                          />
-                          {allOnlineUsers.includes(user?._id) && (
-                            <div className="h-3 w-3 rounded-full bg-green-400 absolute top-0 right-0"></div>
-                          )}
-                        </div>
-                        <div>
-                          <p>
-                            <span>{user?.firstName}</span>{" "}
-                            <span>{user?.lastName}</span>
-                          </p>
-                          {allOnlineUsers.includes(user?._id)?
-                          <p className="text-green-400 font-semibold">online</p>:
-                          <p className="text-red-400 font-semibold">offline</p>
-                  }
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+                        {isOnline ? "online" : "offline"}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
       </div>
 
-      {/* Bottom Profile + Logout */}
-      <div className="h-[9%] flex items-center px-4 justify-between border-t border-gray-950">
-        <div className="flex items-center gap-4">
+      {/* Bottom profile */}
+      <div className="h-[9%] flex items-center justify-between px-4 border-t border-gray-950">
+        <div className="flex items-center gap-3">
           <img
             src={userData?.profilePic}
-            className="h-12 w-12 rounded-full object-cover"
-            alt="profile"
+            className="h-10 w-10 rounded-full object-cover"
           />
-          <p className="text-xl font-semibold text-[18px]">
-            <span>{userData?.firstName}</span> <span>{userData?.lastName}</span>
+          <p>
+            {userData?.firstName} {userData?.lastName}
           </p>
         </div>
 
         <button
           onClick={logoutHandler}
-          className="bg-gray-900 px-6 py-2 rounded-md hover:bg-gray-800"
+          className="bg-gray-900 px-4 py-2 rounded-md"
         >
           Logout
         </button>
