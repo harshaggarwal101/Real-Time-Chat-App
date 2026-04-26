@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 require("dotenv").config();
 
 const port = process.env.PORT || 4000;
@@ -11,6 +12,18 @@ const { app, server } = require("./socket/socket");
 
 dbConnect();
 
+// MIDDLEWARE HERE (NOT IN SOCKET ONLY)
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "https://rivora-two.vercel.app"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  }),
+);
+
+app.use(express.json());
+
+// ROUTES
 app.use("/api/v1", authRoute);
 app.use("/api/v1", messageRoute);
 
