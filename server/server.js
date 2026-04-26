@@ -15,7 +15,11 @@ dbConnect();
 // MIDDLEWARE HERE (NOT IN SOCKET ONLY)
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://rivora-two.vercel.app"],
+    origin: [
+      "http://localhost:5173",
+      "https://rivora-two.vercel.app",
+      "https://rivora-i3l42uhs3-harshaggarwal101s-projects.vercel.app",
+    ],
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   }),

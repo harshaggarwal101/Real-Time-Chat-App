@@ -6,10 +6,21 @@ const { Server } = require("socket.io");
 const app = express();
 
 // MIDDLEWARE (must include your deployed frontend!)
-app.use(express.json());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://rivora-two.vercel.app"],
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps/Postman)
+      if (!origin) return callback(null, true);
+
+      // Allowed localhost
+      if (origin.includes("localhost:5173")) return callback(null, true);
+
+      // Allow any Vercel frontend
+      if (origin.endsWith(".vercel.app")) return callback(null, true);
+
+      // Otherwise block
+      return callback(new Error("CORS Not Allowed"));
+    },
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   }),
@@ -21,7 +32,13 @@ const server = http.createServer(app);
 // SOCKET SERVER
 const io = new Server(server, {
   cors: {
-    origin: ["http://localhost:5173", "https://rivora-two.vercel.app"],
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (origin.includes("localhost:5173")) return callback(null, true);
+      if (origin.endsWith(".vercel.app")) return callback(null, true);
+
+      return callback(new Error("Socket CORS Not Allowed"));
+    },
     methods: ["GET", "POST"],
     credentials: true,
   },
