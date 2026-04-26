@@ -7,7 +7,7 @@ import { setUserDetails } from "../../redux/slices/user";
 import axios from "axios";
 import Loader from "../common/Loader";
 
-const Sidebar = () => {
+const Sidebar = ({ setChatUserId ,chatUserId}) => {
   const { userData } = useSelector((state) => state.user);
   const { token } = useSelector((state) => state.auth);
 
@@ -56,10 +56,10 @@ const Sidebar = () => {
     getAllUsers();
   }, []);
 
-  const searchHandler=(e)=>{
+  const searchHandler = (e) => {
     const value = e.target.value.toLowerCase();
-    console.log(value)
-    if(!value){
+    console.log(value);
+    if (!value) {
       setAllUsers(originalAllUsers);
       return;
     }
@@ -69,8 +69,7 @@ const Sidebar = () => {
       return fullName.includes(value);
     });
     setAllUsers(searchUsers);
-
-  }
+  };
 
   return (
     <div className="h-full py-2">
@@ -109,7 +108,10 @@ const Sidebar = () => {
                     return (
                       <div
                         key={index}
-                        className="flex items-center gap-5 hover:bg-gray-950 transition-all duration-400 cursor-pointer p-2 rounded-full"
+                        onClick={() => {
+                          setChatUserId(user?._id);
+                        }}
+                        className={`flex items-center gap-5 hover:bg-gray-950 transition-all duration-400 cursor-pointer p-2 rounded-full ${chatUserId==user?._id?"bg-gray-950":""}`}
                       >
                         <div className="relative">
                           <img
@@ -146,8 +148,7 @@ const Sidebar = () => {
             alt="profile"
           />
           <p className="text-xl font-semibold text-[18px]">
-            <span>{userData?.firstName}</span>{" "}
-            <span>{userData?.lastName}</span>
+            <span>{userData?.firstName}</span> <span>{userData?.lastName}</span>
           </p>
         </div>
 

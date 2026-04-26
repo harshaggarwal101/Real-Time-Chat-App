@@ -75,7 +75,7 @@ exports.getAllMessages = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "All messages fetched successfully",
-      conversation: convo,
+      conversation: convo?.messages?.length > 0 ? convo.messages : [],
     });
   } catch (error) {
     console.log("GET MSG ERROR:", error);
