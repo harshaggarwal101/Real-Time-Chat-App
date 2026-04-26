@@ -11,6 +11,7 @@ import { IoIosSend } from "react-icons/io";
 const MessagesContainer = ({ chatUserId }) => {
   const { token } = useSelector((state) => state.auth);
   const { userData } = useSelector((state) => state.user);
+  const {socket}=useSelector((state)=>state.socketio);
 
   const [loading, setLoading] = useState(false);
   const [allMessages, setAllMessages] = useState([]);
@@ -98,6 +99,23 @@ const MessagesContainer = ({ chatUserId }) => {
   useEffect(() => {
     messageRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [allMessages]);
+
+
+  const handleMessage=(data)=>{
+    if(data?.senderId===chatUserId){
+      setAllMessages(prev=>[...prev,data]);
+    }
+  }
+
+  useEffect(() => {
+    if (!socket) return;
+
+    socket.on("new-message", handleMessage);
+
+    return () => {
+      socket.off("new-message", handleMessage);
+    };
+  }, [chatUserId, socket]);
 
   // --------------------------------
   // No chat selected

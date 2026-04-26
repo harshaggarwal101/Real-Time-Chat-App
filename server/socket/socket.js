@@ -15,6 +15,10 @@ const io = new Server(server, {
 
 const allOnlineUsers={};
 
+function getRecieverSocketId(recieverId){
+  return allOnlineUsers[recieverId];
+}
+
 io.on("connection",(socket)=>{
     const userId=socket.handshake.query.userId;
     if(userId!== undefined){
@@ -30,4 +34,4 @@ io.on("connection",(socket)=>{
     })
 })
 
-module.exports={app,server,io};
+module.exports={app,server,io,getRecieverSocketId};
